@@ -17,6 +17,27 @@ function color_datasets(datasets){
     return datasets
 }
 
+/**
+ * plot a line chart
+ **/
+function plot_line(ctx, data){
+	options = {
+		barValueSpacing: 20,
+        scales: {
+            yAxes: [{
+                ticks: {
+                    min: 0,
+                },
+            }],
+    	},
+	}
+
+    chart = new Chart(ctx, {
+        type: 'line',
+        data:data,
+		options:options,
+    })
+}
 
 
 /**
@@ -143,5 +164,40 @@ function bar(ctx, groups, create=false){
             chart.update()
         }
     })
+}
 
+function histogram(ctx, groups, create=false){
+    if (!groups || !groups.length){
+        // When all groups are unticked, api (graph/resubmissions without ?group= 
+        // would return the whole dataset, hack to make an empty graph instead
+        chart.data.datasets = []
+        chart.update()
+        return
+    }
+    var url = "/graph/histogram"
+    $.getJSON({url, data:{group:groups}, traditional:true },function(data){
+
+        /*
+        data={
+            labels:[
+                "0-10", "11-20", "21-30", "31-40", "41-50", 
+                "51-60", "61-70", "71-80", "81-90", "91-100"
+                ],
+            datasets:[
+                {"label":"maths", "data":[0,0,1,2,4,3,1,0,0,0]},
+                {"label":"progr", "data":[0,4,2,3,1,0,1,0,0,0]},
+            ]
+        }
+        */
+        data.datasets = color_datasets(data.datasets)
+        if (create){
+            // Clear any previous chart in canvas
+            if(chart){chart.destroy()}
+            plot_line(ctx, data)
+        }
+        else {
+            chart.data = data
+            chart.update()
+        }
+    })
 }

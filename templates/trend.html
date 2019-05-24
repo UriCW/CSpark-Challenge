@@ -2,6 +2,7 @@
 
 {% block scripts %}
     <script>
+
         var ctx = null
 
         /** 
@@ -9,7 +10,7 @@
         **/
         function create(){
             selected_groups = get_selected_groups()
-            bar(ctx , selected_groups, create=true)
+            scatter(ctx , selected_groups, create=true)
         }
 
 
@@ -18,12 +19,11 @@
         **/
         function update(){
             selected_groups = get_selected_groups()
-            bar(ctx , selected_groups)
+            scatter(ctx , selected_groups)
         }
-    
 
         $(document).ready(function() {
-            var canv = $("#canvas")[0]
+            var canv = document.getElementById('canvas')
             ctx = canv.getContext('2d');
             /**
             * Create the checkboxes to select which groups to display
@@ -37,6 +37,8 @@
                         var err = textStatus + ", " + error;
                         console.log( "Request Failed: " + err );
                 });
+
+
         });
     </script>
 {% endblock %}
@@ -44,13 +46,11 @@
 {% block options %}
 <div id="options">
     <b>Options</b>
-    <div id="groups">
-    </div>
-    <div id="cutoff">
-    </div>
+    <div id="groups"></div>
+    <div id="students"></div>
 </div>
 {% endblock %}
 
 {% block description %}
-A bar graph for final (top) results for each student / submission
+A scatter plot of all submissions in dataset
 {% endblock %}

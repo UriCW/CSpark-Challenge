@@ -3,6 +3,7 @@ from flask_mongoengine import MongoEngine
 import config
 import models
 import pipelines
+
 app = Flask(__name__)
 app.config.from_object(config.DevelopmentConfig)
 db = MongoEngine(app)
@@ -16,6 +17,26 @@ def groups():
     """
     groups = models.Submission.objects().distinct("group_name")
     return jsonify(groups)
+
+
+@app.route("/students")
+def students():
+    """ Gets a list of student IDs
+
+    optionally limit to students in groups
+    using the group URL parameter
+
+    :group: group name to include, default to all,
+        accepts multiple occurances
+    :return: a list of student IDs
+    """
+    all_groups = models.Submission.objects().distinct("group_name")
+    groups = request.args.getlist('group') or all_groups
+
+    students = models.Submission.objects(
+        group_name__in=groups
+    ).distinct("student_id")
+    return jsonify(students)
 
 
 @app.route("/data/top_scores")
@@ -48,8 +69,8 @@ def grades():
         'datasets': [],
     }
 
-    groups = request.args.getlist(
-        'group') or models.Submission.objects().distinct("group_name")
+    all_groups = models.Submission.objects().distinct("group_name")
+    groups = request.args.getlist('group') or all_groups
     modules = sorted(models.Submission.objects().distinct("module_name"))
     for m in modules:
         ret['datasets'].append({"label": m, "data": []})
@@ -69,26 +90,43 @@ def grades():
             for ds in ret['datasets']:
                 if ds['label'] == m:
                     ds['data'].append(result)
-            # print("{} - {} - {}".format(s, m, result))
-        # print()
-    # print(ret)
     return jsonify(ret)
 
 
-@app.route("/graph/distributions")
-def distributions():
-    ret = {}
-    groups = request.args.getlist(
-        'group') or models.Submission.objects().distinct("group_name")
-
+@app.route("/graph/histogram")
+def distribution():
+    """ Gets the histogram data, count occurances of each score range
+        for each module
+    """
     ranges = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    last = 0
-    for r in ranges:
-        label = "{} to {}".format(last, r)
-        count = models.Submission.objects(
-        ).count()
-        print(count)
-        last = r
+    ret = {
+        'labels': ranges,
+        'datasets': []
+    }
+    all_groups = models.Submission.objects().distinct("group_name")
+    groups = request.args.getlist('group') or all_groups
+    pipeline = pipelines.top_scores
+
+    modules = models.Submission.objects().distinct("module_name")
+    for m in modules:
+        # Iterator can't be reset, so recreate each time
+        datasets = models.Submission.objects(
+            group_name__in=groups
+        ).aggregate(*pipeline)
+
+        # Get a list of scores for module m
+        dataset = {'label': m, 'data': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+        scores = [e['score'] for e in datasets if e['module'] == m]
+
+        # Count occurances of score ranges
+        lower_limit = 0
+        for idx, upper_limit in enumerate(ranges):
+            num_scores_in_range = len(
+                [s for s in scores if s > lower_limit and s <= upper_limit]
+            )
+            dataset['data'][idx] = num_scores_in_range
+            lower_limit = upper_limit
+        ret['datasets'].append(dataset)
     return jsonify(ret)
 
 
@@ -96,8 +134,12 @@ def distributions():
 def resumbissions():
     """ Gets the datasets for scatter plot of resubmission improvements
     """
-    groups = request.args.getlist(
-        'group') or models.Submission.objects().distinct("group_name")
+    all_groups = models.Submission.objects().distinct("group_name")
+    all_students = models.Submission.objects().distinct("student_id")
+
+    groups = request.args.getlist('group') or all_groups
+    students = request.args.getlist('student') or all_students
+
     pipeline = pipelines.submission_scatter
     datasets = models.Submission.objects(
         group_name__in=groups).aggregate(*pipeline)
@@ -110,17 +152,25 @@ def resumbissions():
 #@app.route("/")
 @app.route("/submissions")
 def root():
-    groups = request.args.getlist(
-        'group') or models.Submission.objects().distinct("group_name")
     return render_template("scat.html")
 
 
 @app.route("/")
 @app.route("/results")
 def results():
-    groups = request.args.getlist(
-        'group') or models.Submission.objects().distinct("group_name")
     return render_template("results.html")
+
+
+@app.route("/trends")
+def trend():
+    students = request.args.getlist('student', type=int)
+    print(students)
+    return render_template("trend.html", students=students)
+
+
+@app.route("/histogram")
+def histogram():
+    return render_template("histogram.html")
 
 if __name__ == "__main__":
     app.run()

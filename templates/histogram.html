@@ -5,20 +5,20 @@
         var ctx = null
 
         /** 
-        * Create a scatter graph
+        * Create a histogram
         **/
         function create(){
             selected_groups = get_selected_groups()
-            bar(ctx , selected_groups, create=true)
+            histogram(ctx , selected_groups, create=true)
         }
 
 
         /**
-        * Update the scatter graph
+        * Update the histogram
         **/
         function update(){
             selected_groups = get_selected_groups()
-            bar(ctx , selected_groups)
+            histogram(ctx , selected_groups)
         }
     
 
@@ -52,5 +52,5 @@
 {% endblock %}
 
 {% block description %}
-A bar graph for final (top) results for each student / submission
+A histogram showing the number of occurances of each score range. non-submissions and zero grades are ignored
 {% endblock %}
