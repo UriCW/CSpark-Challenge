@@ -1,0 +1,86 @@
+{% extends "dash.html" %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='charts.js') }}"></script>
+    <script>
+
+        var ctx = null
+
+        /** 
+        * Create a scatter graph
+        **/
+        function create(){
+            selected_groups = get_selected_groups()
+            scatter(ctx , selected_groups, create=true)
+        }
+
+
+        /**
+        * Update the scatter graph
+        **/
+        function update(){
+            selected_groups = get_selected_groups()
+            scatter(ctx , selected_groups)
+        }
+    
+
+        /**
+        * populates the group selection tickboxes and assigns an event listener
+        **/
+        function create_groups_tickboxes(groups){
+            var container = $("#options #groups")
+            container.append("groups: <br>")
+            for (var i=0; i<groups.length; i++){
+                var group_name = groups[i]
+                container
+                    .append("<label>"+group_name+"</label>")
+                    .append("<input type='checkbox' checked id='"+group_name+"'>")
+            }
+            container.find("input[type=checkbox]").change(function(){
+                update()
+            });
+        }
+
+        /**
+        * returns a list of selected group ids
+        **/
+        function get_selected_groups(){
+            selected = []
+            $('#options #groups input[type=checkbox]:checked').each(function(){
+                selected.push($(this).attr('id'))
+            })
+            return selected
+        }
+
+        $(document).ready(function() {
+            var canv = document.getElementById('canvas')
+            ctx = canv.getContext('2d');
+            /**
+            * Create the checkboxes to select which groups to display
+            **/
+            $.getJSON("/groups")
+                .done(function(json){
+                    create_groups_tickboxes(json)
+                    create()
+                })
+                .fail(function( jqxhr, textStatus, error ) {
+                        var err = textStatus + ", " + error;
+                        console.log( "Request Failed: " + err );
+                });
+
+            
+        });
+    </script>
+{% endblock %}
+
+{% block options %}
+<div id="options">
+    <b>Options</b>
+    <div id="groups">
+    </div>
+</div>
+{% endblock %}
+
+{% block description %}
+A scatter plot of all submissions in dataset
+{% endblock %}

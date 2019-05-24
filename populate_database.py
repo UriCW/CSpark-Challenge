@@ -23,7 +23,7 @@ def populate(connection_string, root_path):
             fn = path + "/" + files[0]
             with open(fn, "r") as fp:
                 results = json.load(fp)
-            submission = Submission(path, results)
+            submission = Submission().load(path, results)
             ret.append(submission)
         else:
             msg = "Unexpected files {} found in directory {}".format(
