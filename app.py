@@ -183,5 +183,4 @@ def histogram():
     return render_template("histogram.html")
 
 if __name__ == "__main__":
-    populate_database.populate(config.CONNECTION_STRING, config.DATAFILES_PATH)
-    app.run(host="0.0.0.0")
+    app.run(host="0.0.0.0", port=5000)

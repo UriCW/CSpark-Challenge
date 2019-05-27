@@ -46,10 +46,10 @@ browse to http://localhost:5000
 
 The application displays four graphs.
 
-Scatter graph of result for all submissions, groupped by student and module, displayed as grade over submission date.
+Clickable Scatter graph of result for all submissions, groupped by student and module, displayed as grade over submission date.
 
-Scatter graph of submissions of a single student, groupped by module, displayed as grade over submission date.
+Scatter graph of submissions of a single student, groupped by module, displayed as grade over submission date. To view this graph click on any datapoint in the previous graph
 
 Bar chart showing the final (top grade) score for each student in both modules
 
-Histogram displaying the distribution of final grades in each range. This does not include submissions with zero grade.
+Histogram displaying the distribution of final grades in each range. This does not include submissions with zero grade.

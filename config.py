@@ -1,4 +1,5 @@
 # CONNECTION_STRING = 'mongodb://root:example@localhost:27017/submissions' + \
+#     '?authSource=admin'
 CONNECTION_STRING = 'mongodb://root:example@mongo:27017/submissions' + \
     '?authSource=admin'
 MOCK_CONNECTION_STRING = 'mongodb://root:example@localhost:27017/mock_submissions'
