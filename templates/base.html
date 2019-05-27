@@ -8,12 +8,13 @@
 </head>
 <body>
     <div id="header">
-        <img src="static/logo.png">
+        <img src="/static/logo.png">
     </div>
     <div id="content">{% block content %}{% endblock %}</div>
     <div id="footer">
+        <br>
         {% block footer %}
-        &copy; Copyright 2008 by <a href="http://domain.invalid/">you</a>.
+        <b>Created by Uri Cohen.</b>
         {% endblock %}
     </div>
 </body>

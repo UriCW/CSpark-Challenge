@@ -12,8 +12,25 @@ def client():
 
 
 def test_student_resubmissions(client):
-    # assert False
-    pass
+    """ Tests student graph api data
+    Test student id is as expected
+    Test label in one of the two modules
+    Tests submission grade is a number between 0 and 100
+    """
+    url = "/graph/student/55"
+    resp = client.get(url)
+    print(resp.json)
+    for r in resp.json:
+        print(r)
+        assert r['student'] == 55
+        assert r['label'] in [
+            'Student_55_pre2-programming',
+            'Student_55_pre1-maths'
+        ]
+        for d in r['data']:
+            print(d)
+            assert type(d['y']) in [float, int]
+            assert 0 <= d['y'] <= 100
 
 
 def test_distribution(client):
@@ -37,7 +54,7 @@ def test_distribution(client):
 def test_grades(client):
     """ Test grades graph data
 
-    Tests all student ideas are present
+    Tests all student IDs are present
     Tests module names are one of the expected labels
     Tests grade is a number between 0 and 100
     """

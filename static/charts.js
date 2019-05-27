@@ -100,7 +100,7 @@ function plot_scatter(ctx, datasets){
 
                 idx = item[0]._datasetIndex
                 console.log(datasets[idx])
-                //window.location.replace("/");
+                window.location.replace("/student/"+datasets[idx]['student']);
             }
         },
 	});
@@ -136,6 +136,26 @@ function scatter(ctx, groups, create=false){
         }
     })
 }
+
+/**
+ * Scatter graph for a single student's submissions
+ * one dataset for each module
+ * least square line
+ *
+ **/
+function student_scatter(ctx, student, create=false){
+    var url = "/graph/student/"+student
+    $.getJSON({url,data:{student:student}, traditional:true }, function(datasets){
+        // Color datasets
+        datasets = color_datasets(datasets)
+        if (create){
+            // Clear any previous chart in canvas
+            if(chart){chart.destroy()}
+            plot_scatter(ctx, datasets)
+        }
+    })
+}
+
 
 /**
  * A bar chart of top results for all sumissions.
@@ -176,19 +196,6 @@ function histogram(ctx, groups, create=false){
     }
     var url = "/graph/histogram"
     $.getJSON({url, data:{group:groups}, traditional:true },function(data){
-
-        /*
-        data={
-            labels:[
-                "0-10", "11-20", "21-30", "31-40", "41-50", 
-                "51-60", "61-70", "71-80", "81-90", "91-100"
-                ],
-            datasets:[
-                {"label":"maths", "data":[0,0,1,2,4,3,1,0,0,0]},
-                {"label":"progr", "data":[0,4,2,3,1,0,1,0,0,0]},
-            ]
-        }
-        */
         data.datasets = color_datasets(data.datasets)
         if (create){
             // Clear any previous chart in canvas

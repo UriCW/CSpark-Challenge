@@ -3,6 +3,7 @@ from flask_mongoengine import MongoEngine
 import config
 import models
 import pipelines
+import populate_database
 
 app = Flask(__name__)
 app.config.from_object(config.DevelopmentConfig)
@@ -42,6 +43,8 @@ def students():
 @app.route("/data/top_scores")
 def top_scores():
     """ Gets a list of results, one for each student/module
+
+    :return: a list of result entries in the format
     [
         {
          'group':<GROUP>,
@@ -61,8 +64,8 @@ def top_scores():
 
 
 @app.route("/graph/grades")
-def grades():
-    """ Returns a data object to display bar chart with
+def grades_graph_api():
+    """ Returns a data object to display results bar chart with
     """
     ret = {
         'labels': [],
@@ -71,6 +74,7 @@ def grades():
 
     all_groups = models.Submission.objects().distinct("group_name")
     groups = request.args.getlist('group') or all_groups
+
     modules = sorted(models.Submission.objects().distinct("module_name"))
     for m in modules:
         ret['datasets'].append({"label": m, "data": []})
@@ -94,8 +98,8 @@ def grades():
 
 
 @app.route("/graph/histogram")
-def distribution():
-    """ Gets the histogram data, count occurances of each score range
+def distribution_graph_api():
+    """ Gets the grade histogram data, count occurances of each score range
         for each module
     """
     ranges = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
@@ -131,41 +135,47 @@ def distribution():
 
 
 @app.route("/graph/resubmissions")
-def resumbissions():
+def resumbissions_graph_api():
     """ Gets the datasets for scatter plot of resubmission improvements
     """
     all_groups = models.Submission.objects().distinct("group_name")
-    all_students = models.Submission.objects().distinct("student_id")
-
     groups = request.args.getlist('group') or all_groups
-    students = request.args.getlist('student') or all_students
 
     pipeline = pipelines.submission_scatter
     datasets = models.Submission.objects(
-        group_name__in=groups).aggregate(*pipeline)
+        group_name__in=groups
+    ).aggregate(*pipeline)
     ret = []
     for d in datasets:
         ret.append(d)
     return jsonify(ret)
 
 
-#@app.route("/")
+@app.route("/graph/student/<int:student_id>")
+def student_graph_api(student_id):
+    pipeline = pipelines.submission_scatter
+    datasets = models.Submission.objects(
+        student_id=student_id
+    ).aggregate(*pipeline)
+    ret = [d for d in datasets]
+    return jsonify(ret)
+
+
+@app.route("/")
 @app.route("/submissions")
 def root():
     return render_template("scat.html")
 
 
-@app.route("/")
 @app.route("/results")
 def results():
     return render_template("results.html")
 
 
-@app.route("/trends")
-def trend():
-    students = request.args.getlist('student', type=int)
-    print(students)
-    return render_template("trend.html", students=students)
+@app.route("/student/<int:student_id>")
+def student(student_id):
+    return render_template("student.html", student=student_id)
+    # return render_template("student.html", student=student_id)
 
 
 @app.route("/histogram")
@@ -173,4 +183,5 @@ def histogram():
     return render_template("histogram.html")
 
 if __name__ == "__main__":
-    app.run()
+    populate_database.populate(config.CONNECTION_STRING, config.DATAFILES_PATH)
+    app.run(host="0.0.0.0")
