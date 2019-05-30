@@ -1,0 +1,47 @@
+{% extends "dash.html" %}
+
+{% block scripts %}
+    <script>
+
+        var ctx = null
+
+        /** 
+        * Create a scatter graph
+        **/
+        function create(){
+            student_scatter(ctx , {{student}}, create=true)
+        }
+
+
+        /**
+        * Update the scatter graph
+        **/
+        function update(){
+            selected_groups = get_selected_groups()
+            scatter(ctx , selected_groups)
+        }
+
+        $(document).ready(function() {
+            var canv = document.getElementById('canvas')
+            ctx = canv.getContext('2d');
+            /**
+            * Create the checkboxes to select which groups to display
+            **/
+            $.getJSON("/groups")
+                .done(function(json){
+                    create()
+                })
+                .fail(function( jqxhr, textStatus, error ) {
+                        var err = textStatus + ", " + error;
+                        console.log( "Request Failed: " + err );
+                });
+        });
+    </script>
+{% endblock %}
+
+{% block options %}
+{% endblock %}
+
+{% block description %}
+A scatter plot of all of student {{student}} submissions in dataset
+{% endblock %}

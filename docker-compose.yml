@@ -3,21 +3,26 @@ version: '3.1'
 
 services:
   mongo:
-    image: mongo
+    build:
+        context: ./deployment/mongo
+        dockerfile: Dockerfile
     restart: always
     ports:
       - 27017:27017
     environment:
+      MONGO_INITDB_DATABASE: submissions
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-    volumes:
-       - ./database:/data/db
 
   mongo-express:
     image: mongo-express
     restart: always
     ports:
       - 8081:8081
+    depends_on:
+        - mongo
+    links:
+      - mongo
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: root
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
