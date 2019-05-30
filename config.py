@@ -1,7 +1,8 @@
+import os
 # CONNECTION_STRING = 'mongodb://root:example@localhost:27017/submissions' + \
 #     '?authSource=admin'
-CONNECTION_STRING = 'mongodb://root:example@mongo:27017/submissions' + \
-    '?authSource=admin'
+CONNECTION_STRING = os.environ.get("MONGO_CONNECTION_STRING") or \
+    'mongodb://root:example@mongo:27017/submissions?authSource=admin'
 MOCK_CONNECTION_STRING = 'mongodb://root:example@localhost:27017/mock_submissions'
 INPUT_DATE_FORMAT = "%Y%m%d_%H%M%S"
 RESULTS_FILENAME = "results.json"

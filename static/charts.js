@@ -92,7 +92,17 @@ function plot_scatter(ctx, datasets){
             scales: {
                 xAxes: [{
                     type: 'time',
-                    time: {displayFormats: {quarter: 'DD MMM YYYY'}}
+                    time: {
+                        unit: 'day',
+                        displayFormats: {
+                            second: 'h:MM:SS',
+                            minute: 'h:MM',
+                            hour: 'hA',
+                            day: 'MMM D',
+                            month: 'YYYY MMM',
+                            year: 'YYYY'
+                        }
+                    }
                 }]
             },
             onClick:  function(evt, item){
